@@ -1,5 +1,6 @@
 import type { Exam } from '../types'
 import { readJsonFile, upsertJsonFile } from '../services/github'
+import { useAppStore } from './useAppStore'
 import { generateId } from '../utils/id'
 import { getExamPath, getCurrentYearKey, getTodayISO } from '../utils/date'
 import { create } from 'zustand'
@@ -45,6 +46,7 @@ export const useExamStore = create<ExamState>((set, get) => ({
       const nextItems = items ?? []
 
       set({ items: nextItems, loading: false })
+      await useAppStore.getState().syncExamRecords(nextItems, targetYearKey, false)
     } catch (error) {
       console.error('加载考试记录失败', error)
       set({ error: '加载考试记录失败，请稍后重试', loading: false })
@@ -70,6 +72,7 @@ export const useExamStore = create<ExamState>((set, get) => ({
       const path = getExamPath(yearKey)
 
       await upsertJsonFile<Exam[]>(path, nextItems, `更新 ${yearKey} 考试记录`)
+      await useAppStore.getState().syncExamRecords(nextItems, yearKey)
       set({ items: nextItems, loading: false })
     } catch (error) {
       console.error('保存考试记录失败', error)

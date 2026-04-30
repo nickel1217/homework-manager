@@ -1,5 +1,6 @@
 import type { Homework } from '../types'
 import { readJsonFile, upsertJsonFile } from '../services/github'
+import { useAppStore } from './useAppStore'
 import { generateId } from '../utils/id'
 import { getHomeworkPath, getCurrentMonthKey, getTodayISO } from '../utils/date'
 import { create } from 'zustand'
@@ -33,6 +34,7 @@ export const useHomeworkStore = create<HomeworkState>((set, get) => ({
       const nextItems = items ?? []
 
       set({ items: nextItems })
+      await useAppStore.getState().syncHomeworkRecords(nextItems, targetMonthKey, false)
     } catch {
       set({ error: '加载作业失败，请检查网络后重试。' })
     } finally {
@@ -59,6 +61,7 @@ export const useHomeworkStore = create<HomeworkState>((set, get) => ({
 
     try {
       await upsertJsonFile(path, updatedItems, `新增作业记录 ${newHomework.subject}`)
+      await useAppStore.getState().syncHomeworkRecords(updatedItems, getCurrentMonthKey())
     } catch {
       set({ items: previousItems, error: '保存作业失败，请检查网络后重试。' })
     } finally {
@@ -89,6 +92,7 @@ export const useHomeworkStore = create<HomeworkState>((set, get) => ({
 
     try {
       await upsertJsonFile(path, updatedItems, `更新作业状态 ${targetItem.subject}`)
+      await useAppStore.getState().syncHomeworkRecords(updatedItems, getMonthKeyFromDate(targetItem.date))
     } catch {
       set({ items: previousItems, error: '更新作业状态失败，请稍后重试。' })
     } finally {
