@@ -49,6 +49,14 @@ interface FileMetadata {
   content: string
 }
 
+function decodeBase64Utf8(content: string): string {
+  const normalizedContent = content.replace(/\n/g, '')
+  const binary = atob(normalizedContent)
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0))
+
+  return new TextDecoder('utf-8').decode(bytes)
+}
+
 async function getRawFile(path: string): Promise<FileMetadata | null> {
   const { owner, repo, branch } = getConfig()
   const url = `${GITHUB_API}/repos/${owner}/${repo}/contents/${path}?ref=${branch}`
@@ -66,7 +74,7 @@ async function getRawFile(path: string): Promise<FileMetadata | null> {
   const data = await res.json()
   return {
     sha: data.sha as string,
-    content: atob(data.content as string),
+    content: decodeBase64Utf8(data.content as string),
   }
 }
 
