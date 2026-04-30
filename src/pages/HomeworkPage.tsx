@@ -9,9 +9,9 @@ import HomeworkList from '../components/homework/HomeworkList'
 
 function HomeworkPage() {
   const { hydrated, loadUserData } = useAppStore()
-  const { items, loading, error, loadHomework, addHomework, toggleCompleted, clearError } =
+  const { items, loading, error, loadHomework, addHomework, updateHomeworkDuration, toggleCompleted, clearError } =
     useHomeworkStore()
-  const [duration, setDuration] = useState(0)
+  const [activeHomeworkId, setActiveHomeworkId] = useState<string | null>(null)
   const shouldReduceMotion = useReducedMotion()
 
   useEffect(() => {
@@ -25,13 +25,23 @@ function HomeworkPage() {
   }, [loadHomework])
 
   const handleTimerStop = useCallback((minutes: number) => {
-    setDuration(minutes)
-  }, [])
+    if (!activeHomeworkId) {
+      return
+    }
+
+    updateHomeworkDuration(activeHomeworkId, minutes)
+      .then(() => {
+        setActiveHomeworkId(null)
+      })
+      .catch(() => {
+        // store already surfaces user-friendly error state
+      })
+  }, [activeHomeworkId, updateHomeworkDuration])
 
   const handleSave = useCallback(
-    async (subject: string, content: string, dur: number, imageUrl?: string) => {
-      await addHomework(subject, content, dur, imageUrl)
-      setDuration(0)
+    async (subject: string, content: string, imageUrl?: string) => {
+      const newHomework = await addHomework(subject, content, imageUrl)
+      setActiveHomeworkId(newHomework.id)
     },
     [addHomework],
   )
@@ -48,26 +58,26 @@ function HomeworkPage() {
         <p className="mt-1 text-sm text-slate-500">计时、记录、完成，每天进步一点点！</p>
       </header>
 
-      <Timer onStop={handleTimerStop} />
+      {activeHomeworkId ? <Timer key={activeHomeworkId} onStop={handleTimerStop} /> : null}
 
       <AnimatePresence initial={false}>
-        {duration > 0 ? (
+        {activeHomeworkId ? (
           <motion.div
-            key={duration}
+            key={activeHomeworkId}
             initial={shouldReduceMotion ? false : { opacity: 0, y: -10, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -10, scale: 0.98 }}
             transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.24, ease: 'easeOut' }}
             className="rounded-2xl bg-sky-50 px-4 py-3 text-center text-sm font-bold text-sky-700 ring-1 ring-sky-200"
           >
-            ⏱ 已计时 {duration} 分钟，现在记录这次作业吧！
+            ⏱ 作业已创建，现在开始为这条作业计时吧！
           </motion.div>
         ) : null}
       </AnimatePresence>
 
       <div className="rounded-3xl bg-white p-6 shadow-lg shadow-indigo-100/80 ring-1 ring-indigo-100">
         <h2 className="mb-4 text-xl font-black text-slate-800">记录作业</h2>
-        <HomeworkForm onSave={handleSave} duration={duration} />
+        <HomeworkForm onSave={handleSave} />
       </div>
 
       <HomeworkList

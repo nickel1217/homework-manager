@@ -10,7 +10,8 @@ interface HomeworkState {
   loading: boolean
   error: string | null
   loadHomework: (monthKey?: string) => Promise<void>
-  addHomework: (subject: string, content: string, duration: number, imageUrl?: string) => Promise<void>
+  addHomework: (subject: string, content: string, imageUrl?: string) => Promise<Homework>
+  updateHomeworkDuration: (id: string, duration: number) => Promise<void>
   toggleCompleted: (id: string) => Promise<void>
   clearError: () => void
 }
@@ -42,13 +43,13 @@ export const useHomeworkStore = create<HomeworkState>((set, get) => ({
     }
   },
 
-  addHomework: async (subject, content, duration, imageUrl) => {
+  addHomework: async (subject, content, imageUrl) => {
     const previousItems = get().items
     const newHomework: Homework = {
       id: generateId(),
       subject,
       content,
-      duration,
+      duration: 0,
       imageUrl,
       date: getTodayISO(),
       completed: false,
@@ -62,8 +63,42 @@ export const useHomeworkStore = create<HomeworkState>((set, get) => ({
     try {
       await upsertJsonFile(path, updatedItems, `新增作业记录 ${newHomework.subject}`)
       await useAppStore.getState().syncHomeworkRecords(updatedItems, getCurrentMonthKey())
+      return newHomework
     } catch {
       set({ items: previousItems, error: '保存作业失败，请检查网络后重试。' })
+      throw new Error('保存作业失败，请检查网络后重试。')
+    } finally {
+      set({ loading: false })
+    }
+  },
+
+  updateHomeworkDuration: async (id, duration) => {
+    const previousItems = get().items
+    const updatedItems = previousItems.map((item) =>
+      item.id === id
+        ? {
+            ...item,
+            duration,
+          }
+        : item,
+    )
+
+    const targetItem = updatedItems.find((item) => item.id === id)
+
+    if (!targetItem) {
+      return
+    }
+
+    const path = getHomeworkPath(getMonthKeyFromDate(targetItem.date))
+
+    set({ items: updatedItems, loading: true, error: null })
+
+    try {
+      await upsertJsonFile(path, updatedItems, `更新作业时长 ${targetItem.subject}`)
+      await useAppStore.getState().syncHomeworkRecords(updatedItems, getMonthKeyFromDate(targetItem.date))
+    } catch {
+      set({ items: previousItems, error: '更新作业时长失败，请稍后重试。' })
+      throw new Error('更新作业时长失败，请稍后重试。')
     } finally {
       set({ loading: false })
     }

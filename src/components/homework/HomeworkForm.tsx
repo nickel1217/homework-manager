@@ -2,8 +2,7 @@ import { useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 
 interface HomeworkFormProps {
-  onSave: (subject: string, content: string, duration: number, imageUrl?: string) => Promise<void>
-  duration: number
+  onSave: (subject: string, content: string, imageUrl?: string) => Promise<void>
 }
 
 const SUBJECT_OPTIONS = ['语文', '数学', '英语', '科学', '其他'] as const
@@ -31,7 +30,7 @@ function readFileAsDataUrl(file: File): Promise<string> {
   })
 }
 
-function HomeworkForm({ onSave, duration }: HomeworkFormProps) {
+function HomeworkForm({ onSave }: HomeworkFormProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [subject, setSubject] = useState('')
   const [content, setContent] = useState('')
@@ -80,7 +79,7 @@ function HomeworkForm({ onSave, duration }: HomeworkFormProps) {
     setSaving(true)
 
     try {
-      await onSave(subject, content.trim(), duration, imageUrl)
+      await onSave(subject, content.trim(), imageUrl)
       resetForm()
     } finally {
       setSaving(false)
