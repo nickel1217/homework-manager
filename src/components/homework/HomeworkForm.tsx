@@ -95,7 +95,7 @@ function HomeworkForm({ onSave, duration }: HomeworkFormProps) {
         </label>
         <select
           id="homework-subject"
-          className="w-full rounded-3xl border border-indigo-200 bg-white px-4 py-4 text-lg text-slate-800 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+          className="w-full appearance-none rounded-[1.75rem] border border-indigo-200/80 bg-white px-5 py-4 text-lg font-semibold text-slate-800 shadow-[0_12px_28px_rgba(99,102,241,0.10)] outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:bg-slate-100"
           disabled={saving}
           onChange={(event) => setSubject(event.target.value)}
           value={subject}
@@ -138,7 +138,7 @@ function HomeworkForm({ onSave, duration }: HomeworkFormProps) {
 
         <div className="flex items-center gap-3">
           <label
-            className="inline-flex min-h-14 flex-1 cursor-pointer items-center justify-center rounded-3xl bg-amber-400 px-4 py-4 text-lg font-semibold text-amber-950 shadow-lg shadow-amber-200 transition hover:bg-amber-300 active:scale-95"
+            className="inline-flex min-h-14 flex-1 cursor-pointer items-center justify-center rounded-[1.75rem] bg-gradient-to-r from-fuchsia-500 via-rose-500 to-orange-400 px-4 py-4 text-lg font-black text-white shadow-lg shadow-rose-200 transition hover:scale-[1.02] hover:from-fuchsia-400 hover:via-rose-400 hover:to-orange-300 active:scale-95"
             htmlFor="homework-photo"
           >
             📸 打开相机

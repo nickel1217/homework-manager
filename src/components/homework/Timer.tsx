@@ -91,7 +91,7 @@ function Timer({ onStop, disabled = false }: TimerProps) {
             type="button"
             onClick={handleStart}
             disabled={disabled}
-            className="min-h-14 min-w-14 rounded-full bg-green-500 px-6 py-4 text-lg font-bold text-white shadow-md transition hover:bg-green-400 disabled:cursor-not-allowed disabled:bg-green-300"
+            className="min-h-14 min-w-14 rounded-[1.75rem] bg-gradient-to-r from-indigo-500 via-sky-500 to-cyan-400 px-7 py-4 text-lg font-black text-white shadow-lg shadow-sky-200 transition hover:scale-[1.02] hover:from-indigo-400 hover:via-sky-400 hover:to-cyan-300 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:from-slate-300 disabled:via-slate-300 disabled:to-slate-300 disabled:shadow-none"
           >
             ▶️ Start
           </button>

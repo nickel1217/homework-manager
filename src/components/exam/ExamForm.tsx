@@ -77,7 +77,7 @@ function ExamForm({ onSave }: ExamFormProps) {
         </label>
         <select
           id="exam-subject"
-          className="w-full rounded-3xl border border-sky-200 bg-white px-4 py-4 text-lg text-slate-800 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+          className="w-full appearance-none rounded-[1.75rem] border border-sky-200/80 bg-white px-5 py-4 text-lg font-semibold text-slate-800 shadow-[0_12px_28px_rgba(14,165,233,0.10)] outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
           disabled={isSaving}
           onChange={(event) => setSubject(event.target.value)}
           value={subject}
