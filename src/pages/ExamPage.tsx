@@ -1,10 +1,18 @@
 import { useCallback, useEffect } from 'react'
+import { useAppStore } from '../store/useAppStore'
 import { useExamStore } from '../store/useExamStore'
 import ExamForm from '../components/exam/ExamForm'
 import ExamList from '../components/exam/ExamList'
 
 function ExamPage() {
+  const { hydrated, loadUserData } = useAppStore()
   const { items, loading, error, loadExams, addExam, clearError } = useExamStore()
+
+  useEffect(() => {
+    if (!hydrated) {
+      loadUserData()
+    }
+  }, [hydrated, loadUserData])
 
   useEffect(() => {
     loadExams()

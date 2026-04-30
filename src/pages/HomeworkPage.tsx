@@ -1,13 +1,21 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useAppStore } from '../store/useAppStore'
 import { useHomeworkStore } from '../store/useHomeworkStore'
 import Timer from '../components/homework/Timer'
 import HomeworkForm from '../components/homework/HomeworkForm'
 import HomeworkList from '../components/homework/HomeworkList'
 
 function HomeworkPage() {
+  const { hydrated, loadUserData } = useAppStore()
   const { items, loading, error, loadHomework, addHomework, toggleCompleted, clearError } =
     useHomeworkStore()
   const [duration, setDuration] = useState(0)
+
+  useEffect(() => {
+    if (!hydrated) {
+      loadUserData()
+    }
+  }, [hydrated, loadUserData])
 
   useEffect(() => {
     loadHomework()
