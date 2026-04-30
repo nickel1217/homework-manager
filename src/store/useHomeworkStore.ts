@@ -1,0 +1,100 @@
+import type { Homework } from '../types'
+import { readJsonFile, upsertJsonFile } from '../services/github'
+import { generateId } from '../utils/id'
+import { getHomeworkPath, getCurrentMonthKey, getTodayISO } from '../utils/date'
+import { create } from 'zustand'
+
+interface HomeworkState {
+  items: Homework[]
+  loading: boolean
+  error: string | null
+  loadHomework: (monthKey?: string) => Promise<void>
+  addHomework: (subject: string, content: string, duration: number, imageUrl?: string) => Promise<void>
+  toggleCompleted: (id: string) => Promise<void>
+  clearError: () => void
+}
+
+function getMonthKeyFromDate(date: string): string {
+  return date.slice(0, 7)
+}
+
+export const useHomeworkStore = create<HomeworkState>((set, get) => ({
+  items: [],
+  loading: false,
+  error: null,
+
+  loadHomework: async (monthKey) => {
+    set({ loading: true, error: null })
+
+    try {
+      const targetMonthKey = monthKey ?? getCurrentMonthKey()
+      const path = getHomeworkPath(targetMonthKey)
+      const items = await readJsonFile<Homework[]>(path)
+      const nextItems = items ?? []
+
+      set({ items: nextItems })
+    } catch {
+      set({ error: '加载作业失败，请检查网络后重试。' })
+    } finally {
+      set({ loading: false })
+    }
+  },
+
+  addHomework: async (subject, content, duration, imageUrl) => {
+    const previousItems = get().items
+    const newHomework: Homework = {
+      id: generateId(),
+      subject,
+      content,
+      duration,
+      imageUrl,
+      date: getTodayISO(),
+      completed: false,
+      points: 10,
+    }
+    const updatedItems = [...previousItems, newHomework]
+    const path = getHomeworkPath(getCurrentMonthKey())
+
+    set({ items: updatedItems, loading: true, error: null })
+
+    try {
+      await upsertJsonFile(path, updatedItems, `新增作业记录 ${newHomework.subject}`)
+    } catch {
+      set({ items: previousItems, error: '保存作业失败，请检查网络后重试。' })
+    } finally {
+      set({ loading: false })
+    }
+  },
+
+  toggleCompleted: async (id) => {
+    const previousItems = get().items
+    const updatedItems = previousItems.map((item) =>
+      item.id === id
+        ? {
+            ...item,
+            completed: !item.completed,
+          }
+        : item,
+    )
+
+    const targetItem = updatedItems.find((item) => item.id === id)
+
+    if (!targetItem) {
+      return
+    }
+
+    const path = getHomeworkPath(getMonthKeyFromDate(targetItem.date))
+
+    set({ items: updatedItems, loading: true, error: null })
+
+    try {
+      await upsertJsonFile(path, updatedItems, `更新作业状态 ${targetItem.subject}`)
+    } catch {
+      set({ items: previousItems, error: '更新作业状态失败，请稍后重试。' })
+    } finally {
+      set({ loading: false })
+    }
+  },
+
+  clearError: () => set({ error: null }),
+}))
