@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+
 import { useAppStore } from '../store/useAppStore'
 import { useHomeworkStore } from '../store/useHomeworkStore'
 import Timer from '../components/homework/Timer'
@@ -10,6 +12,7 @@ function HomeworkPage() {
   const { items, loading, error, loadHomework, addHomework, toggleCompleted, clearError } =
     useHomeworkStore()
   const [duration, setDuration] = useState(0)
+  const shouldReduceMotion = useReducedMotion()
 
   useEffect(() => {
     if (!hydrated) {
@@ -47,11 +50,20 @@ function HomeworkPage() {
 
       <Timer onStop={handleTimerStop} />
 
-      {duration > 0 && (
-        <div className="rounded-2xl bg-sky-50 px-4 py-3 text-center text-sm font-bold text-sky-700 ring-1 ring-sky-200">
-          ⏱ 已计时 {duration} 分钟，现在记录这次作业吧！
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {duration > 0 ? (
+          <motion.div
+            key={duration}
+            initial={shouldReduceMotion ? false : { opacity: 0, y: -10, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -10, scale: 0.98 }}
+            transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.24, ease: 'easeOut' }}
+            className="rounded-2xl bg-sky-50 px-4 py-3 text-center text-sm font-bold text-sky-700 ring-1 ring-sky-200"
+          >
+            ⏱ 已计时 {duration} 分钟，现在记录这次作业吧！
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       <div className="rounded-3xl bg-white p-6 shadow-lg shadow-indigo-100/80 ring-1 ring-indigo-100">
         <h2 className="mb-4 text-xl font-black text-slate-800">记录作业</h2>

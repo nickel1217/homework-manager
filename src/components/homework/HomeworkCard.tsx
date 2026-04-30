@@ -1,3 +1,5 @@
+import { motion, useReducedMotion } from 'framer-motion'
+
 import type { Homework } from '../../types'
 import { formatDateDisplay, formatDuration } from '../../utils/date'
 
@@ -31,9 +33,22 @@ function truncateContent(content: string, maxLength = 50): string {
 
 function HomeworkCard({ homework, onToggleComplete }: HomeworkCardProps) {
   const isCompleted = homework.completed
+  const shouldReduceMotion = useReducedMotion()
 
   return (
-    <article
+    <motion.article
+      layout
+      initial={false}
+      animate={{
+        opacity: 1,
+        scale: shouldReduceMotion ? 1 : isCompleted ? 1.01 : 1,
+        y: 0,
+      }}
+      transition={
+        shouldReduceMotion
+          ? { duration: 0 }
+          : { type: 'spring', stiffness: 260, damping: 24 }
+      }
       className={joinClasses(
         'rounded-2xl p-5 shadow-lg transition-colors',
         isCompleted
@@ -53,10 +68,19 @@ function HomeworkCard({ homework, onToggleComplete }: HomeworkCardProps) {
               {homework.subject}
             </span>
             {isCompleted ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-700 ring-1 ring-emerald-200">
+              <motion.span
+                initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={
+                  shouldReduceMotion
+                    ? { duration: 0 }
+                    : { type: 'spring', stiffness: 320, damping: 20 }
+                }
+                className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-700 ring-1 ring-emerald-200"
+              >
                 <span aria-hidden="true">✅</span>
                 已完成
-              </span>
+              </motion.span>
             ) : null}
           </div>
 
@@ -90,7 +114,7 @@ function HomeworkCard({ homework, onToggleComplete }: HomeworkCardProps) {
           {isCompleted ? '✅ 已完成' : '☐ 去完成'}
         </button>
       </div>
-    </article>
+    </motion.article>
   )
 }
 
