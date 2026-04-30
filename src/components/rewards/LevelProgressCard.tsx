@@ -1,3 +1,5 @@
+import { motion, useReducedMotion } from 'framer-motion'
+
 import type { LevelProgress } from '../../utils/gamification'
 
 interface LevelProgressCardProps {
@@ -24,10 +26,17 @@ const ACCENT_STYLES = {
 
 function LevelProgressCard({ progress, accent = 'amber' }: LevelProgressCardProps) {
   const styles = ACCENT_STYLES[accent]
+  const shouldReduceMotion = useReducedMotion()
   const levelTotalPoints = progress.currentLevelPoints + progress.pointsToNextLevel
+  const clampedPercent = Math.max(0, Math.min(progress.progressPercent, 100))
 
   return (
-    <section className={`rounded-3xl px-5 py-5 ${styles.card}`}>
+    <motion.section
+      initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.28, ease: 'easeOut' }}
+      className={`rounded-3xl px-5 py-5 ${styles.card}`}
+    >
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-xl font-black text-slate-800">升级进度</h2>
@@ -43,9 +52,12 @@ function LevelProgressCard({ progress, accent = 'amber' }: LevelProgressCardProp
 
       <div className="mt-5">
         <div className={`h-4 overflow-hidden rounded-full ${styles.barTrack}`}>
-          <div
+          <motion.div
             className={`h-full rounded-full ${styles.barFill}`}
-            style={{ width: `${Math.max(0, Math.min(progress.progressPercent, 100))}%` }}
+            initial={shouldReduceMotion ? false : { width: 0 }}
+            animate={shouldReduceMotion ? undefined : { width: `${clampedPercent}%` }}
+            transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.6, delay: 0.12, ease: 'easeOut' }}
+            style={shouldReduceMotion ? { width: `${clampedPercent}%` } : undefined}
           />
         </div>
 
@@ -54,10 +66,17 @@ function LevelProgressCard({ progress, accent = 'amber' }: LevelProgressCardProp
             本级积分 <span className={`font-black ${styles.value}`}>{progress.currentLevelPoints}</span> /{' '}
             {levelTotalPoints}
           </span>
-          <span>{Math.round(progress.progressPercent)}%</span>
+          <motion.span
+            key={Math.round(clampedPercent)}
+            initial={shouldReduceMotion ? false : { opacity: 0.5, scale: 0.94 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.24, ease: 'easeOut' }}
+          >
+            {Math.round(clampedPercent)}%
+          </motion.span>
         </div>
       </div>
-    </section>
+    </motion.section>
   )
 }
 

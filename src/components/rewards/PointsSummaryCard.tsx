@@ -1,3 +1,5 @@
+import { motion, useReducedMotion } from 'framer-motion'
+
 interface SummaryStat {
   label: string
   value: string
@@ -42,20 +44,43 @@ function PointsSummaryCard({
   summaryStats = [],
 }: PointsSummaryCardProps) {
   const styles = ACCENT_STYLES[accent]
+  const shouldReduceMotion = useReducedMotion()
 
   return (
-    <section className={`rounded-3xl px-5 py-5 ${styles.card}`}>
+    <motion.section
+      initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.28, ease: 'easeOut' }}
+      className={`rounded-3xl px-5 py-5 ${styles.card}`}
+    >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className={`text-sm font-black tracking-wide ${styles.eyebrow}`}>{title}</p>
-          <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-800">{totalPoints} 积分</h2>
+          <motion.h2
+            key={totalPoints}
+            initial={shouldReduceMotion ? false : { opacity: 0.4, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.26, ease: 'easeOut' }}
+            className="mt-2 text-3xl font-black tracking-tight text-slate-800"
+          >
+            {totalPoints} 积分
+          </motion.h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
         </div>
 
         <div className="flex flex-col items-end gap-3">
-          <div className={`flex h-16 w-16 items-center justify-center rounded-3xl text-3xl ${styles.icon}`}>
+          <motion.div
+            initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.88, rotate: -6 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            transition={
+              shouldReduceMotion
+                ? { duration: 0 }
+                : { type: 'spring', stiffness: 260, damping: 18 }
+            }
+            className={`flex h-16 w-16 items-center justify-center rounded-3xl text-3xl ${styles.icon}`}
+          >
             {icon}
-          </div>
+          </motion.div>
           <span className={`inline-flex rounded-full px-3 py-1 text-sm font-bold ${styles.levelBadge}`}>
             Lv.{level}
           </span>
@@ -64,15 +89,25 @@ function PointsSummaryCard({
 
       {summaryStats.length > 0 ? (
         <div className="mt-5 grid grid-cols-2 gap-3">
-          {summaryStats.map((item) => (
-            <div key={item.label} className={`rounded-2xl px-4 py-3 ${styles.statCard}`}>
+          {summaryStats.map((item, index) => (
+            <motion.div
+              key={item.label}
+              initial={shouldReduceMotion ? false : { opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={
+                shouldReduceMotion
+                  ? { duration: 0 }
+                  : { duration: 0.24, delay: 0.08 + index * 0.06, ease: 'easeOut' }
+              }
+              className={`rounded-2xl px-4 py-3 ${styles.statCard}`}
+            >
               <p className="text-xs font-bold tracking-wide text-slate-500">{item.label}</p>
               <p className={`mt-2 text-lg font-black ${styles.statValue}`}>{item.value}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
       ) : null}
-    </section>
+    </motion.section>
   )
 }
 

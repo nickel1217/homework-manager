@@ -1,3 +1,5 @@
+import { motion, useReducedMotion } from 'framer-motion'
+
 import { ACHIEVEMENT_DEFINITIONS } from '../../utils/gamification'
 
 interface AchievementBadgeGridProps {
@@ -33,29 +35,56 @@ function AchievementBadgeGrid({
   accent = 'amber',
 }: AchievementBadgeGridProps) {
   const styles = ACCENT_STYLES[accent]
+  const shouldReduceMotion = useReducedMotion()
   const unlockedSet = new Set(unlockedIds)
   const unlockedCount = ACHIEVEMENT_DEFINITIONS.filter((item) => unlockedSet.has(item.id)).length
 
   return (
-    <section className={`rounded-3xl px-5 py-5 ${styles.card}`}>
+    <motion.section
+      initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.28, ease: 'easeOut' }}
+      className={`rounded-3xl px-5 py-5 ${styles.card}`}
+    >
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-xl font-black text-slate-800">{title}</h2>
           <p className="mt-1 text-sm leading-6 text-slate-500">{description}</p>
         </div>
 
-        <span className={`inline-flex rounded-full px-3 py-1 text-sm font-bold ${styles.count}`}>
+        <motion.span
+          key={unlockedCount}
+          initial={shouldReduceMotion ? false : { opacity: 0.5, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={
+            shouldReduceMotion
+              ? { duration: 0 }
+              : { type: 'spring', stiffness: 300, damping: 20 }
+          }
+          className={`inline-flex rounded-full px-3 py-1 text-sm font-bold ${styles.count}`}
+        >
           {unlockedCount}/{ACHIEVEMENT_DEFINITIONS.length}
-        </span>
+        </motion.span>
       </div>
 
       <div className="mt-5 grid grid-cols-2 gap-3">
-        {ACHIEVEMENT_DEFINITIONS.map((achievement) => {
+        {ACHIEVEMENT_DEFINITIONS.map((achievement, index) => {
           const unlocked = unlockedSet.has(achievement.id)
 
           return (
-            <article
+            <motion.article
               key={achievement.id}
+              initial={shouldReduceMotion ? false : { opacity: 0, y: 16, scale: 0.96 }}
+              animate={{
+                opacity: 1,
+                scale: shouldReduceMotion ? 1 : unlocked ? 1.01 : 1,
+                y: 0,
+              }}
+              transition={
+                shouldReduceMotion
+                  ? { duration: 0 }
+                  : { duration: 0.24, delay: index * 0.04, ease: 'easeOut' }
+              }
               className={
                 unlocked
                   ? `rounded-3xl px-4 py-4 ${styles.unlockedTile}`
@@ -63,7 +92,14 @@ function AchievementBadgeGrid({
               }
             >
               <div className="flex items-start justify-between gap-3">
-                <div
+                <motion.div
+                  initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.88, rotate: unlocked ? -8 : 0 }}
+                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                  transition={
+                    shouldReduceMotion
+                      ? { duration: 0 }
+                      : { type: 'spring', stiffness: 280, damping: 18, delay: 0.04 + index * 0.04 }
+                  }
                   className={
                     unlocked
                       ? `flex h-12 w-12 items-center justify-center rounded-2xl text-2xl ${styles.unlockedIcon}`
@@ -71,7 +107,7 @@ function AchievementBadgeGrid({
                   }
                 >
                   {achievement.icon}
-                </div>
+                </motion.div>
 
                 <span
                   className={
@@ -90,7 +126,7 @@ function AchievementBadgeGrid({
               <p className={`mt-2 text-sm leading-6 ${unlocked ? 'text-slate-600' : 'text-slate-400'}`}>
                 {achievement.description}
               </p>
-            </article>
+            </motion.article>
           )
         })}
       </div>
@@ -98,7 +134,7 @@ function AchievementBadgeGrid({
       {unlockedCount === 0 ? (
         <p className={`mt-4 text-sm font-bold ${styles.accent}`}>先完成一项作业，就能点亮第一枚徽章啦！</p>
       ) : null}
-    </section>
+    </motion.section>
   )
 }
 
