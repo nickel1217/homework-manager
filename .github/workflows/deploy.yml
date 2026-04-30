@@ -31,7 +31,30 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify GitHub data config
+        env:
+          VITE_GITHUB_OWNER: ${{ vars.VITE_GITHUB_OWNER }}
+          VITE_GITHUB_DATA_REPO: ${{ vars.VITE_GITHUB_DATA_REPO }}
+          VITE_GITHUB_TOKEN: ${{ secrets.VITE_GITHUB_TOKEN }}
+        run: |
+          missing=0
+          for name in VITE_GITHUB_OWNER VITE_GITHUB_DATA_REPO VITE_GITHUB_TOKEN; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing $name in repository variables/secrets"
+              missing=1
+            fi
+          done
+
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
       - name: Build app
+        env:
+          VITE_GITHUB_OWNER: ${{ vars.VITE_GITHUB_OWNER }}
+          VITE_GITHUB_DATA_REPO: ${{ vars.VITE_GITHUB_DATA_REPO }}
+          VITE_GITHUB_BRANCH: ${{ vars.VITE_GITHUB_BRANCH || 'main' }}
+          VITE_GITHUB_TOKEN: ${{ secrets.VITE_GITHUB_TOKEN }}
         run: npm run build
 
       - name: Setup Pages

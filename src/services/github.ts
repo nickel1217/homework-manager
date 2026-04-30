@@ -1,5 +1,27 @@
 const GITHUB_API = 'https://api.github.com'
 
+function getUserFriendlyError(err: unknown, fallbackMessage: string): string {
+  if (err instanceof Error) {
+    if (err.message.includes('GitHub 配置缺失')) {
+      return 'GitHub 数据配置缺失，请先在仓库 Variables/Secrets 中配置并重新部署。'
+    }
+
+    if (err.message.includes('401')) {
+      return 'GitHub Token 无效或已过期，请检查仓库 Secret 配置。'
+    }
+
+    if (err.message.includes('403')) {
+      return 'GitHub 请求被拒绝，请检查 Token 权限或稍后再试。'
+    }
+
+    if (err.message.includes('404')) {
+      return 'GitHub 数据文件或仓库路径不存在，请检查数据仓库名称、分支和文件结构。'
+    }
+  }
+
+  return fallbackMessage
+}
+
 function getConfig() {
   const owner = import.meta.env.VITE_GITHUB_OWNER as string
   const repo = import.meta.env.VITE_GITHUB_DATA_REPO as string
@@ -55,7 +77,7 @@ export async function readJsonFile<T>(path: string): Promise<T | null> {
     return JSON.parse(file.content) as T
   } catch (err) {
     console.error(`读取文件失败: ${path}`, err)
-    throw new Error(`无法读取数据，请检查网络连接`)
+    throw new Error(getUserFriendlyError(err, '无法读取数据，请检查网络连接'))
   }
 }
 
@@ -80,7 +102,7 @@ export async function writeJsonFile<T>(path: string, data: T, message?: string):
     }
   } catch (err) {
     console.error(`写入文件失败: ${path}`, err)
-    throw new Error(`无法保存数据，请检查网络连接`)
+    throw new Error(getUserFriendlyError(err, '无法保存数据，请检查网络连接'))
   }
 }
 
@@ -112,7 +134,7 @@ export async function updateJsonFile<T>(path: string, data: T, message?: string)
     }
   } catch (err) {
     console.error(`更新文件失败: ${path}`, err)
-    throw new Error(`无法更新数据，请检查网络连接`)
+    throw new Error(getUserFriendlyError(err, '无法更新数据，请检查网络连接'))
   }
 }
 
@@ -145,6 +167,6 @@ export async function upsertJsonFile<T>(path: string, data: T, message?: string)
     }
   } catch (err) {
     console.error(`upsert 文件失败: ${path}`, err)
-    throw new Error(`无法保存数据，请检查网络连接`)
+    throw new Error(getUserFriendlyError(err, '无法保存数据，请检查网络连接'))
   }
 }
